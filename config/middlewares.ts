@@ -19,7 +19,7 @@ export default [
     name: 'strapi::cors',
     config: {
       enabled: true,
-      origin: ['http://127.0.0.1:5500', 'http://localhost:5500', 'https://your-frontend-domain.com'],
+      origin: ['http://127.0.0.1:5500', 'http://localhost:5500', 'https://eskandr5.github.io'],
       methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS'],
       headers: ['Content-Type', 'Authorization', 'Origin', 'Accept'],
       keepHeaderOnError: true,
