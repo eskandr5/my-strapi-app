@@ -8,22 +8,37 @@ const { createCoreController } = require('@strapi/strapi').factories;
 
 module.exports = createCoreController('api::post.post', ({ strapi }) => ({
     async find(ctx) {
-        // تعديل الطلب ليشمل التعليقات والمستخدمين دائماً
+        // تحديث الاستعلام ليشمل العلاقات العميقة
         ctx.query = {
             ...ctx.query,
             populate: {
-                image: true,
-                user: true,
-                likes: {
-                    populate: { user: true }
+                // جلب صورة المنشور
+                image: {
+                    populate: true
                 },
+                // جلب صاحب المنشور
+                user: {
+                    fields: ['username', 'email'] // يمكنك تحديد الحقول التي تريدها فقط للأمان
+                },
+                // جلب اللايكات مع بيانات المستخدم الذي قام باللايك
+                likes: {
+                    populate: {
+                        user: {
+                            fields: ['username']
+                        }
+                    }
+                },
+                // جلب التعليقات مع بيانات المستخدم الذي كتب التعليق
                 comments: {
-                    populate: { user: true }
+                    populate: {
+                        user: {
+                            fields: ['username']
+                        }
+                    }
                 }
             },
         };
 
-        // تشغيل الدالة الأصلية مع الإعدادات الجديدة
         const { data, meta } = await super.find(ctx);
         return { data, meta };
     },
@@ -32,13 +47,25 @@ module.exports = createCoreController('api::post.post', ({ strapi }) => ({
         ctx.query = {
             ...ctx.query,
             populate: {
-                image: true,
-                user: true,
+                image: {
+                    populate: true
+                },
+                user: {
+                    fields: ['username', 'email']
+                },
                 likes: {
-                    populate: { user: true }
+                    populate: {
+                        user: {
+                            fields: ['username']
+                        }
+                    }
                 },
                 comments: {
-                    populate: { user: true }
+                    populate: {
+                        user: {
+                            fields: ['username']
+                        }
+                    }
                 }
             },
         };
