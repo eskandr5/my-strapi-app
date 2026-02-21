@@ -1,28 +1,40 @@
 'use strict';
 
 const { createCoreController } = require('@strapi/strapi').factories;
-const { parseMultipartData } = require('@strapi/utils');
 
 module.exports = createCoreController('api::post.post', ({ strapi }) => ({
 
+    // دالة الإنشاء المحدثة والمبسطة
     async create(ctx) {
-        let entity;
+        try {
+            let entity;
 
-        if (ctx.is('multipart')) {
-            const { data, files } = parseMultipartData(ctx);
-            entity = await strapi.service('api::post.post').create({
-                data: { ...data, publishedAt: new Date() },
-                files
-            });
-        } else {
-            entity = await strapi.service('api::post.post').create(ctx.request.body);
+            if (ctx.is('multipart')) {
+                // في Strapi v4/v5، البيانات والملفات تكون موجودة بالفعل في ctx.request
+                const { data } = ctx.request.body;
+                const { files } = ctx.request;
+
+                // تحويل الـ data من نص إلى كائن إذا كانت مرسلة كـ String
+                const parsedData = typeof data === 'string' ? JSON.parse(data) : data;
+
+                entity = await strapi.service('api::post.post').create({
+                    data: { ...parsedData, publishedAt: new Date() },
+                    files
+                });
+            } else {
+                // للنصوص فقط
+                entity = await strapi.service('api::post.post').create(ctx.request.body);
+            }
+
+            const sanitizedEntity = await super.sanitizeOutput(entity, ctx);
+            return super.transformResponse(sanitizedEntity);
+        } catch (err) {
+            ctx.body = err;
+            ctx.status = 500;
         }
-
-        // استخدام super بدلاً من this لإيقاف التنبيهات الحمراء
-        const sanitizedEntity = await super.sanitizeOutput(entity, ctx);
-        return super.transformResponse(sanitizedEntity);
     },
 
+    // دالة find و findOne كما هي للـ Populate
     async find(ctx) {
         ctx.query = {
             ...ctx.query,
