@@ -1,38 +1,41 @@
-'use strict';
+/**
+ * post controller
+ */
 
-const { createCoreController } = require('@strapi/strapi').factories;
+import { factories } from '@strapi/strapi'
 
-module.exports = createCoreController('api::post.post', ({ strapi }) => ({
+export default factories.createCoreController('api::post.post', ({ strapi }) => ({
     async create(ctx) {
         try {
             let entity;
 
+            // التحقق مما إذا كان الطلب يحتوي على ملفات (صور)
             if (ctx.is('multipart')) {
-                // استلام البيانات والملفات
                 const { data } = ctx.request.body;
                 const { files } = ctx.request;
 
-                // تحويل النص إلى JSON إذا لزم الأمر
+                // تحويل البيانات من نص إلى كائن (Object)
                 const parsedData = typeof data === 'string' ? JSON.parse(data) : data;
 
-                // إنشاء المنشور وربط الملفات (files)
+                // إنشاء المنشور وربط الصور
                 entity = await strapi.service('api::post.post').create({
                     data: { ...parsedData, publishedAt: new Date() },
-                    files: files
+                    files,
                 });
             } else {
-                // حالة النص فقط (الكود الذي كان يعمل لديك)
+                // في حالة النص فقط
                 entity = await strapi.service('api::post.post').create(ctx.request.body);
             }
 
-            const sanitizedEntity = await super.sanitizeOutput(entity, ctx);
-            return super.transformResponse(sanitizedEntity);
+            const sanitizedEntity = await this.sanitizeOutput(entity, ctx);
+            return this.transformResponse(sanitizedEntity);
         } catch (err) {
+            ctx.body = err;
             ctx.status = 500;
-            ctx.body = { error: err.message };
         }
     },
 
+    // جلب البيانات مع الصور والعلاقات
     async find(ctx) {
         ctx.query = {
             ...ctx.query,
