@@ -5,7 +5,7 @@ module.exports = {
     // جلب بيانات المنشور كاملة لمعرفة صاحب المنشور (الـ receiver)
     // لأن 'result' المبدئية قد تحتوي فقط على معرفات (IDs)
     const postWithAuthor = await strapi.entityService.findOne('api::post.post', result.post.id, {
-      populate: ['author'],
+      populate: ['user'],
     });
 
     try {
